@@ -72,8 +72,8 @@ func FromHTMLNode(doc *html.Node, o ...Options) (string, error) {
 	}
 
 	ctx := textifyTraverseContext{
-		buf:     bytes.Buffer{},
-		options: options,
+		buf:         bytes.Buffer{},
+		options:     options,
 		citationMap: map[string]int{},
 	}
 	if err := ctx.traverse(doc); err != nil {
@@ -431,6 +431,25 @@ func (ctx *textifyTraverseContext) traverseChildren(node *html.Node) error {
 	return nil
 }
 
+// Tests r for being a character where no space should be inserted in front of.
+func punctNoSpaceBefore(r rune) bool {
+	switch r {
+	case '.', ',', ';', '!', '?', ')', ']', '>':
+		return true
+	default:
+		return false
+	}
+}
+
+// Tests r for being a character where no space should be inserted after.
+func punctNoSpaceAfter(r rune) bool {
+	switch r {
+	case '(', '[', '<':
+		return true
+	default:
+		return false
+	}
+}
 func (ctx *textifyTraverseContext) emit(data string) error {
 	if data == "" {
 		return nil
@@ -441,14 +460,14 @@ func (ctx *textifyTraverseContext) emit(data string) error {
 	)
 	for _, line := range lines {
 		runes := []rune(line)
-		startsWithSpace := unicode.IsSpace(runes[0])
-		if !startsWithSpace && !ctx.endsWithSpace && !strings.HasPrefix(data, ".") {
+		startsWithSpace := unicode.IsSpace(runes[0]) || punctNoSpaceBefore(runes[0])
+		if !startsWithSpace && !ctx.endsWithSpace {
 			if err = ctx.buf.WriteByte(' '); err != nil {
 				return err
 			}
 			ctx.lineLength++
 		}
-		ctx.endsWithSpace = unicode.IsSpace(runes[len(runes)-1])
+		ctx.endsWithSpace = unicode.IsSpace(runes[len(runes)-1]) || punctNoSpaceAfter(runes[len(runes)-1])
 		for _, c := range line {
 			if _, err = ctx.buf.WriteString(string(c)); err != nil {
 				return err
