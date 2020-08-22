@@ -1,4 +1,4 @@
-module github.com/Necoro/html2text
+module github.com/jaytaylor/html2text
 
 go 1.14
 
