@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.5
 
 require (
-	github.com/olekukonko/tablewriter v1.0.9
+	github.com/olekukonko/tablewriter v1.1.0
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf
 	golang.org/x/net v0.42.0
 )
